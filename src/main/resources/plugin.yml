@@ -1,0 +1,15 @@
+name: ShelfNames
+version: '${project.version}'
+main: dev.mizio.mcPlugins.shelfNames.MainShelfNames
+api-version: '1.21'
+authors: [ 'MizPablito' ]
+
+depend: [FancyHolograms] # lub nazwa właściwego Fancy pluginu
+
+commands:
+  shelfnames:
+    usage: /shelfnames clear
+    description: Zarządzanie hologramami ShelfNames
+    permissions:
+      shelfnames.clear:
+        default: op

@@ -1,0 +1,7 @@
+update-interval-ticks: 8
+max-distance: 5
+only-custom-names: true
+
+holograms:
+  provider: FANCY
+  offset-y: 1.2
