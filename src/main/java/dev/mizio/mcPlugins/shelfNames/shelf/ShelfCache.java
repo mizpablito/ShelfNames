@@ -1,6 +1,5 @@
 package dev.mizio.mcPlugins.shelfNames.shelf;
 
-import io.papermc.paper.registry.keys.tags.BlockTypeTagKeys;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;

@@ -4,7 +4,8 @@ main: dev.mizio.mcPlugins.shelfNames.MainShelfNames
 api-version: '1.21'
 authors: [ 'MizPablito' ]
 
-depend: [FancyHolograms] # lub nazwa właściwego Fancy pluginu
+softdepend:
+ - FancyHolograms
 
 commands:
   shelfnames:
@@ -13,3 +14,7 @@ commands:
     permissions:
       shelfnames.clear:
         default: op
+permissions:
+  shelfnames.clear:
+    description: Uprawnienie do usuwania hologramów ShelfNames
+    default: op

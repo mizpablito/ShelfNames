@@ -32,20 +32,66 @@ Plugin został zaprojektowany z naciskiem na **wydajność**, **brak zbędnych a
 ## 🔧 Konfiguracja
 
 ```yaml
-update-interval-ticks: 20
-max-distance: 5
+# Co ile ticków sprawdzać czy gracz patrzy się na półkę
+update-interval-ticks: 5
+# Maksymalny dystans w jakim musi być półka od gracza
+rayTraceBlocks-max-distance: 5
+# Czy pokazywać niestandardowe nazwy itemów
 only-custom-names: true
+# Czy pokazywać hologramy tylko dla jednego gracza
+only-one-player: true
 
-holograms:
-  provider: FANCY
-  offset-y: 1.2
+hologram:
+  # Opcje:
+  # - AUTO (automatyczny wybór w kolejności jak poniżej, ostatecznie STANDALONE)
+  # - FANCY (FancyHolograms)
+  # - DECENT (DecentHolograms) - jeszcze nie zaimplementowane!
+  # - STANDALONE (API Bukkit/PaperMC)
+  provider: AUTO
+  # Czy hologram ma podążać za wzrokiem gracza,
+  #  czy sztywno skierowany wraz z frontem półki?
+  position-fixed: true
+  # przesunięcie wysokości
+  offset-y: 0.75
+  # Odsunięcie od półki
+  forward-offset: -0.16
+  # Skalowanie obiektu hologramu
+  scale: 0.32
+
+# Konfiguracja hologramu zależnie od użytej integracji
+integration:
+  fancyHolograms:
+    # Cienie za tekstem
+    textShadow: true
+    # Wyrównanie tekstu
+    # Dostępne opcje: LEFT, CENTER, RIGHT
+    textAlignment: CENTER
+    # Czy hologram ma używać domyślnego tła
+    defaultBackground: true
+    # ...jeśli nie to ustawiamy wartości 0-255
+    backgroundARGB:
+      alpha: 60
+      red: 0
+      green: 0
+      blue: 0
+
+  # API Bukkit
+  standalone:
+    # Cienie za tekstem (TextDisplay#setShadowed)
+    textShadow: true
+    # Wyrównanie tekstu
+    # Dostępne opcje: LEFT, CENTER, RIGHT
+    textAlignment: CENTER
+    # Czy hologram ma używać domyślnego tła
+    defaultBackground: false
+    # ...jeśli nie, to ustawiamy wartości 0–255
+    backgroundARGB:
+      alpha: 60
+      red: 0
+      green: 0
+      blue: 0
+
 ```
-
-- `update-interval-ticks` - co jaki czas wykonywać pętle sprawdzania i odświeżania hologramów (domyślnie 20 ticks)
-- `max-distance` - maksymalna odległość sprawdzania bloków na które patrzy gracz
-- `only-custom-names` - wyświetlaj tylko itemy z customową nazwąość sprawdzania wzroku
-- `hologram.provieder` - plugin obsługujący hologramy, aktualnie FancyHolograms
-- `hologram.offset-y` - wysokość hologramu nad półką
 
 ---
 
