@@ -10,16 +10,38 @@ public class ItemNameUtil {
     private static final LegacyComponentSerializer LEGACY =
             LegacyComponentSerializer.legacySection();
 
-    public static String getName(ItemStack item, boolean onlyCustomNames) {
-        if (item == null || item.getType().isAir()) return "";
+    // Legacy reset (§r) – jedyny pewny reset stylu
+    private static final String LEGACY_RESET = "§r";
 
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null || !meta.hasDisplayName()) {
-            return onlyCustomNames ? "" : item.getType().name();
+    public static String getName(ItemStack item, boolean onlyCustomNames) {
+        if (item == null || item.getType().isAir()) {
+            return "";
         }
 
-        Component displayName = meta.displayName();
-        return displayName == null ? "" : LEGACY.serialize(displayName);
-    }
+        ItemMeta meta = item.getItemMeta();
 
+        // custom display name
+        if (meta != null && meta.hasDisplayName()) {
+            Component displayName = meta.displayName();
+            if (displayName == null) {
+                return "";
+            }
+
+            // reset stylu po nazwie
+            return LEGACY.serialize(displayName) + LEGACY_RESET;
+        }
+
+        // tylko custom names
+        if (onlyCustomNames) {
+            return "";
+        }
+
+        // domyślna nazwa z klienta (TRANSLATABLE)
+        Component vanillaName = Component.translatable(
+                item.getType().translationKey()
+        );
+
+        // reset stylu po nazwie
+        return LEGACY.serialize(vanillaName) + LEGACY_RESET;
+    }
 }
