@@ -6,6 +6,7 @@ plugins {
     `java-library`
     `maven-publish`
     id("io.freefair.lombok") version "9.5.0"
+    id("com.gradleup.shadow") version "9.6.1"
 }
 
 repositories {
@@ -24,13 +25,14 @@ repositories {
 }
 
 dependencies {
-    compileOnly(libs.io.papermc.paper.paper.api)
+    compileOnly("io.papermc.paper:paper-api:26.2.build.+")
     compileOnly(libs.org.projectlombok.lombok)
     compileOnly(libs.de.oliver.fancyholograms)
+    implementation("org.bstats:bstats-bukkit:3.2.1")
 }
 
 group = "dev.mizio.mcPlugins"
-version = "1.2.0"
+version = "1.2.1"
 description = "Wyświetlanie nazw itemów na półkach."
 java.sourceCompatibility = JavaVersion.VERSION_25
 
@@ -46,6 +48,19 @@ tasks.withType<JavaCompile>() {
 
 tasks.withType<Javadoc>() {
     options.encoding = "UTF-8"
+}
+
+tasks.shadowJar {
+    project.configurations.runtimeClasspath.map { setOf(it) }.also { configurations = it }
+
+    dependencies {
+        // Only merge bStats into the final jar, no other dependencies
+        exclude { it.moduleGroup != "org.bstats" }
+    }
+
+    // Relocate bStats into the plugin's package to avoid conflicts with other
+    // plugins using bStats
+    relocate("org.bstats", project.group.toString())
 }
 
 tasks.processResources {

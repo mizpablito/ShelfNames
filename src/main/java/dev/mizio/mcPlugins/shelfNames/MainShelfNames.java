@@ -8,6 +8,7 @@ import dev.mizio.mcPlugins.shelfNames.hologram.impl.StandaloneHologramService;
 import dev.mizio.mcPlugins.shelfNames.shelf.ShelfCache;
 import dev.mizio.mcPlugins.shelfNames.task.ShelfLookTask;
 import lombok.Getter;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -25,6 +26,10 @@ public final class MainShelfNames extends JavaPlugin {
         saveDefaultConfig();
         pluginConfig = new PluginConfig();
         pluginConfig.load(getConfig());
+
+        // bStats
+        int pluginId = 33398;
+        Metrics metrics = new Metrics(this, pluginId);
 
         this.shelfCache = new ShelfCache();
         this.hologramService = createHologramService();
