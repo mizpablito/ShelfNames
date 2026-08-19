@@ -16,17 +16,38 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.RayTraceResult;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ShelfLookTask implements Runnable {
+
+    // Rekord pomocniczy do identyfikacji: dany gracz + konkretna półka
+    private record ViewHoloKey(UUID playerId, Location location) {}
+    // Cooldown 5 sekund per (gracz + półka)
+    private final long holoViewCooldownMs = 5_000L;
 
     private final MainShelfNames plugin;
     private final HologramService holograms;
     private final ShelfCache cache;
 
+    private final Map<ViewHoloKey, Long> lastHoloViewTimes = new ConcurrentHashMap<>();
+
     public ShelfLookTask(MainShelfNames plugin, HologramService holograms, ShelfCache cache) {
         this.plugin = plugin;
         this.holograms = holograms;
         this.cache = cache;
+    }
+
+    private void tryCountView(UUID playerId, Location shelfLoc) {
+        long now = System.currentTimeMillis();
+        ViewHoloKey key = new ViewHoloKey(playerId, shelfLoc);
+        long last = lastHoloViewTimes.getOrDefault(key, 0L);
+
+        if (now - last >= holoViewCooldownMs) {
+            lastHoloViewTimes.put(key, now);
+            plugin.incrementViewHoloCount();
+        }
     }
 
     @Override
@@ -40,6 +61,7 @@ public class ShelfLookTask implements Runnable {
             if (!player.isOnline()) {
                 holograms.remove(player);
                 cache.clear(player);
+                lastHoloViewTimes.keySet().removeIf(key -> key.playerId().equals(player.getUniqueId()));
                 continue;
             }
 
@@ -100,6 +122,8 @@ public class ShelfLookTask implements Runnable {
                             holoLoc,
                             List.of(snapshot.s0(), snapshot.s1(), snapshot.s2())
                     );
+
+                    tryCountView(player.getUniqueId(), shelfLoc);
                 });
             });
         }

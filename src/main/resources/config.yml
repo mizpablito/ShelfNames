@@ -1,6 +1,6 @@
 # Co ile ticków sprawdzać czy gracz patrzy się na półkę
 update-interval-ticks: 5
-# Maksymalny dystans w jakim musi być półka od gracza
+# Maksymalny dystans w jakim musi być półka od gracza (zalecane, nie więcej niż 10)
 rayTraceBlocks-max-distance: 5
 # Czy pokazywać niestandardowe nazwy itemów
 only-custom-names: true

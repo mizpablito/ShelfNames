@@ -4,6 +4,7 @@ import dev.mizio.mcPlugins.shelfNames.hologram.HologramProvider;
 import lombok.Data;
 import org.bukkit.Color;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.plugin.Plugin;
 
 @Data
 public class PluginConfig {
@@ -31,9 +32,16 @@ public class PluginConfig {
     private Color standaloneBackgroundARGB;
 
 
-    public void load(FileConfiguration config) {
+    public void load(Plugin plugin) {
+        FileConfiguration config  = plugin.getConfig();
         this.updateIntervalTicks = config.getLong("update-interval-ticks", 10L);
         this.rayTraceBlocksMaxDistance = config.getInt("rayTraceBlocks-max-distance", 5);
+        if (this.rayTraceBlocksMaxDistance <= 0 || this.rayTraceBlocksMaxDistance > 15) {
+            plugin.getLogger().warning("Invalid config rayTraceBlocks-max-distance: " + this.rayTraceBlocksMaxDistance);
+            plugin.getLogger().warning("Recommended safe range: 1-15");
+            plugin.getLogger().warning("Forced distance: 5");
+            this.rayTraceBlocksMaxDistance = 5;
+        }
         this.onlyCustomNames = config.getBoolean("only-custom-names", true);
         this.onlyOnePlayer = config.getBoolean("only-one-player", true);
 

@@ -9,8 +9,12 @@ import dev.mizio.mcPlugins.shelfNames.shelf.ShelfCache;
 import dev.mizio.mcPlugins.shelfNames.task.ShelfLookTask;
 import lombok.Getter;
 import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SimplePie;
+import org.bstats.charts.SingleLineChart;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public final class MainShelfNames extends JavaPlugin {
@@ -21,15 +25,24 @@ public final class MainShelfNames extends JavaPlugin {
     @Getter
     private PluginConfig pluginConfig;
 
+    private final AtomicInteger viewHologramCounter = new AtomicInteger(0);
+
     @Override
     public void onEnable() {
         saveDefaultConfig();
         pluginConfig = new PluginConfig();
-        pluginConfig.load(getConfig());
+        pluginConfig.load(this);
 
         // bStats
         int pluginId = 33398;
         Metrics metrics = new Metrics(this, pluginId);
+        metrics.addCustomChart(new SingleLineChart("hologram_views", this::getAndResetHoloViews));
+        metrics.addCustomChart(new SimplePie("only_custom_names", () -> {
+            return getPluginConfig().isOnlyCustomNames() ? "Enabled" : "Disabled";
+        }));
+        metrics.addCustomChart(new SimplePie("raytrace_distance", () -> {
+            return getPluginConfig().getRayTraceBlocksMaxDistance() + " blocks";
+        }));
 
         this.shelfCache = new ShelfCache();
         this.hologramService = createHologramService();
@@ -117,6 +130,13 @@ public final class MainShelfNames extends JavaPlugin {
     }
 
 
+    public void incrementViewHoloCount() {
+        viewHologramCounter.incrementAndGet();
+    }
+
+    public int getAndResetHoloViews() {
+        return viewHologramCounter.getAndSet(0);
+    }
 
 }
 

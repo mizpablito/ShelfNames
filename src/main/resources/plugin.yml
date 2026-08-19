@@ -1,9 +1,9 @@
-name: '${name}'
-version: '${version}'
+name: ${name}
+version: ${version}
 main: dev.mizio.mcPlugins.shelfNames.MainShelfNames
 api-version: '1.21'
 authors: [ 'MizPablito' ]
-description: '${description}'
+description: ${description}
 
 softdepend:
  - FancyHolograms
