@@ -1,0 +1,63 @@
+# ShelfNames - konfiguracja (kopia referencyjna PL)
+#
+# To jest wyłącznie tłumaczenie komentarzy z domyślnego pliku konfiguracyjnego.
+# Plugin NIE korzysta z tego pliku - zawsze wczytuje `config.yml` (komentarze po angielsku).
+# Klucze i wartości domyślne są identyczne jak w `src/main/resources/config.yml`.
+
+# Co ile ticków sprawdzać czy gracz patrzy się na półkę
+update-interval-ticks: 5
+# Maksymalny dystans w jakim musi być półka od gracza (zalecane, nie więcej niż 10)
+rayTraceBlocks-max-distance: 5
+# Czy pokazywać niestandardowe (zmienione) nazwy itemów
+only-custom-names: true
+# Czy pokazywać hologramy tylko dla jednego gracza
+only-one-player: true
+
+hologram:
+  # Opcje:
+  # - AUTO (automatyczny wybór w kolejności jak poniżej, ostatecznie STANDALONE)
+  # - FANCY (FancyHolograms)
+  # - STANDALONE (API Bukkit/PaperMC)
+  provider: AUTO
+  # Czy hologram ma podążać za wzrokiem gracza,
+  #  czy sztywno skierowany wraz z frontem półki?
+  position-fixed: true
+  # Przesunięcie wysokości
+  offset-y: 0.75
+  # Odsunięcie od półki
+  forward-offset: -0.16
+  # Skalowanie obiektu hologramu
+  scale: 0.32
+
+# Konfiguracja hologramu zależnie od użytej integracji
+integration:
+  fancyHolograms:
+    # Cienie za tekstem
+    textShadow: true
+    # Wyrównanie tekstu
+    # Dostępne opcje: LEFT, CENTER, RIGHT
+    textAlignment: CENTER
+    # Czy hologram ma używać domyślnego tła
+    defaultBackground: true
+    # ...jeśli nie, to ustawiamy wartości 0-255
+    backgroundARGB:
+      alpha: 60
+      red: 0
+      green: 0
+      blue: 0
+
+  # API Bukkit
+  standalone:
+    # Cienie za tekstem (TextDisplay#setShadowed)
+    textShadow: true
+    # Wyrównanie tekstu
+    # Dostępne opcje: LEFT, CENTER, RIGHT
+    textAlignment: CENTER
+    # Czy hologram ma używać domyślnego tła
+    defaultBackground: false
+    # ...jeśli nie, to ustawiamy wartości 0-255
+    backgroundARGB:
+      alpha: 60
+      red: 0
+      green: 0
+      blue: 0

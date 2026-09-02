@@ -39,6 +39,15 @@ public class ShelfLookTask implements Runnable {
         this.cache = cache;
     }
 
+    /**
+     * {@code true} gdy ten task jest już nieaktualny - plugin się wyłącza
+     * albo po {@code reload} działa nowy {@link HologramService}. Zapobiega
+     * tworzeniu osieroconych hologramów przez zaległe zadania asynchroniczne.
+     */
+    private boolean isStale() {
+        return !plugin.isEnabled() || plugin.getHologramService() != holograms;
+    }
+
     private void tryCountView(UUID playerId, Location shelfLoc) {
         long now = System.currentTimeMillis();
         ViewHoloKey key = new ViewHoloKey(playerId, shelfLoc);
@@ -92,10 +101,13 @@ public class ShelfLookTask implements Runnable {
             );
 
             Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                if (isStale()) return;
                 if (!cache.hasChanged(player, shelfLoc, snapshot)) return;
                 cache.update(player, shelfLoc, snapshot);
 
                 Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (isStale()) return;
+
                     HologramHandle holo = holograms.getOrCreate(player);
 
                     BlockFace facing = BlockFace.SOUTH;

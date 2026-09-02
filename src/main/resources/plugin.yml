@@ -4,18 +4,17 @@ main: dev.mizio.mcPlugins.shelfNames.MainShelfNames
 api-version: '1.21'
 authors: [ 'MizPablito' ]
 description: ${description}
+website: https://github.com/mizpablito/ShelfNames
 
 softdepend:
  - FancyHolograms
 
 commands:
   shelfnames:
-    usage: /shelfnames clear
-    description: Zarządzanie hologramami ShelfNames
-    permissions:
-      shelfnames.clear:
-        default: op
+    usage: /shelfnames [info|clear|reload]
+    description: Informacje o pluginie oraz komendy administracyjne ShelfNames
+
 permissions:
-  shelfnames.clear:
-    description: Uprawnienie do usuwania hologramów ShelfNames
+  shelfnames.admin:
+    description: Pełny dostęp do komend ShelfNames (clear, reload)
     default: op

@@ -1,56 +1,59 @@
-# Co ile ticków sprawdzać czy gracz patrzy się na półkę
+# ShelfNames configuration
+# A Polish translation of these comments is available on GitHub: docs/config.pl.yml
+# (reference only - the plugin always reads this file).
+
+# How often (in ticks) to check whether a player is looking at a shelf
 update-interval-ticks: 5
-# Maksymalny dystans w jakim musi być półka od gracza (zalecane, nie więcej niż 10)
+# Maximum distance the shelf can be from the player (recommended: no more than 10)
 rayTraceBlocks-max-distance: 5
-# Czy pokazywać niestandardowe nazwy itemów
+# Whether to show custom (renamed) item names only
 only-custom-names: true
-# Czy pokazywać hologramy tylko dla jednego gracza
+# Whether to show holograms to a single player only
 only-one-player: true
 
 hologram:
-  # Opcje:
-  # - AUTO (automatyczny wybór w kolejności jak poniżej, ostatecznie STANDALONE)
+  # Options:
+  # - AUTO (automatic selection in the order below, ultimately STANDALONE)
   # - FANCY (FancyHolograms)
-  # - DECENT (DecentHolograms) - jeszcze nie zaimplementowane!
-  # - STANDALONE (API Bukkit/PaperMC)
+  # - STANDALONE (Bukkit/PaperMC API)
   provider: AUTO
-  # Czy hologram ma podążać za wzrokiem gracza,
-  #  czy sztywno skierowany wraz z frontem półki?
+  # Whether the hologram should follow the player's view,
+  #  or stay fixed, aligned with the front of the shelf
   position-fixed: true
-  # przesunięcie wysokości
+  # Height offset
   offset-y: 0.75
-  # Odsunięcie od półki
+  # Distance away from the shelf
   forward-offset: -0.16
-  # Skalowanie obiektu hologramu
+  # Scale of the hologram object
   scale: 0.32
 
-# Konfiguracja hologramu zależnie od użytej integracji
+# Hologram configuration depending on the integration in use
 integration:
   fancyHolograms:
-    # Cienie za tekstem
+    # Text shadow
     textShadow: true
-    # Wyrównanie tekstu
-    # Dostępne opcje: LEFT, CENTER, RIGHT
+    # Text alignment
+    # Available options: LEFT, CENTER, RIGHT
     textAlignment: CENTER
-    # Czy hologram ma używać domyślnego tła
+    # Whether the hologram should use the default background
     defaultBackground: true
-    # ...jeśli nie to ustawiamy wartości 0-255
+    # ...if not, set the values 0-255
     backgroundARGB:
       alpha: 60
       red: 0
       green: 0
       blue: 0
 
-  # API Bukkit
+  # Bukkit API
   standalone:
-    # Cienie za tekstem (TextDisplay#setShadowed)
+    # Text shadow (TextDisplay#setShadowed)
     textShadow: true
-    # Wyrównanie tekstu
-    # Dostępne opcje: LEFT, CENTER, RIGHT
+    # Text alignment
+    # Available options: LEFT, CENTER, RIGHT
     textAlignment: CENTER
-    # Czy hologram ma używać domyślnego tła
+    # Whether the hologram should use the default background
     defaultBackground: false
-    # ...jeśli nie, to ustawiamy wartości 0–255
+    # ...if not, set the values 0-255
     backgroundARGB:
       alpha: 60
       red: 0

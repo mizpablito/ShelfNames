@@ -1,90 +1,94 @@
+**English** · [Polski](README.pl.md)
+
 # ShelfNames
 
-Lekki plugin do Minecraft (Paper), który wyświetla **nazwy itemów znajdujących się na półkach** (`*_SHELF`) w formie **hologramu nad blokiem**, gdy gracz na niego patrzy.
+A lightweight Minecraft (Paper) plugin that displays the **names of items placed on shelves** (`*_SHELF`) as a **hologram above the block** when a player looks at it.
 
-Plugin został zaprojektowany z naciskiem na **wydajność**, **brak zbędnych alokacji** oraz **minimalny wpływ na server thread**.
-
----
-
-## ✨ Funkcje
-
-- Wyświetlanie nazw itemów z półki jako hologram
-- Obsługa wszystkich wariantów drewnianych półek (`Tag.WOODEN_SHELVES`)
-- Zachowanie kolorów i formatowania nazw itemów
-- Aktualizacja hologramu tylko przy realnej zmianie zawartości
-- Automatyczne usuwanie hologramu po odejściu wzroku
-- Brak migotania i zbędnych aktualizacji
-- W pełni kompatybilny z Adventure / MiniMessage
+The plugin is designed with a focus on **performance**, **no unnecessary allocations**, and **minimal impact on the server thread**.
 
 ---
 
-## ⚙️ Jak działa
+## ✨ Features
 
-- Co określoną liczbę ticków plugin sprawdza, **na jaki blok patrzy gracz**
-- Jeśli jest to półka:
-    - porównywana jest jej pozycja z poprzednią (cache)
-    - snapshot zawartości tworzony jest **tylko przy zmianie oglądanej półki**
-- Hologram aktualizowany jest **tylko** po zmianie oglądanej półki 
-- Kosztowne operacje (`BlockState`) wykonywane są **wyłącznie wtedy, gdy są potrzebne**
+- Shows item names from a shelf as a hologram
+- Supports every wooden shelf variant (`Tag.WOODEN_SHELVES`)
+- Preserves item name colors and formatting
+- Updates the hologram only when the contents actually change
+- Automatically removes the hologram once the player looks away
+- No flickering and no redundant updates
+- Fully compatible with Adventure / MiniMessage
 
 ---
 
-## 🔧 Konfiguracja
+## ⚙️ How it works
+
+- Every configured number of ticks the plugin checks **which block the player is looking at**
+- If it's a shelf:
+    - its position is compared with the previous one (cache)
+    - a snapshot of the contents is taken **only when the looked-at shelf changes**
+- The hologram is updated **only** after the looked-at shelf changes
+- Expensive operations (`BlockState`) are performed **only when actually needed**
+
+---
+
+## 🔧 Configuration
+
+A Polish copy of the config comments is available at [`docs/config.pl.yml`](docs/config.pl.yml).
+The plugin always uses `config.yml` (English comments).
 
 ```yaml
-# Co ile ticków sprawdzać czy gracz patrzy się na półkę
+# How often (in ticks) to check whether a player is looking at a shelf
 update-interval-ticks: 5
-# Maksymalny dystans w jakim musi być półka od gracza
+# Maximum distance the shelf can be from the player (recommended: no more than 10)
 rayTraceBlocks-max-distance: 5
-# Czy pokazywać niestandardowe nazwy itemów
+# Whether to show custom (renamed) item names only
 only-custom-names: true
-# Czy pokazywać hologramy tylko dla jednego gracza
+# Whether to show holograms to a single player only
 only-one-player: true
 
 hologram:
-  # Opcje:
-  # - AUTO (automatyczny wybór w kolejności jak poniżej, ostatecznie STANDALONE)
+  # Options:
+  # - AUTO (automatic selection in the order below, ultimately STANDALONE)
   # - FANCY (FancyHolograms)
-  # - DECENT (DecentHolograms) - jeszcze nie zaimplementowane!
-  # - STANDALONE (API Bukkit/PaperMC)
+  # - STANDALONE (Bukkit/PaperMC API)
   provider: AUTO
-  # Czy hologram ma podążać za wzrokiem gracza,
-  #  czy sztywno skierowany wraz z frontem półki?
+  # Whether the hologram should follow the player's view,
+  #  or stay fixed, aligned with the front of the shelf
   position-fixed: true
-  # przesunięcie wysokości
+  # Height offset
   offset-y: 0.75
-  # Odsunięcie od półki
+  # Distance away from the shelf
   forward-offset: -0.16
-  # Skalowanie obiektu hologramu
+  # Scale of the hologram object
   scale: 0.32
 
-# Konfiguracja hologramu zależnie od użytej integracji
+# Hologram configuration depending on the integration in use
 integration:
   fancyHolograms:
-    # Cienie za tekstem
+    # Text shadow
     textShadow: true
-    # Wyrównanie tekstu
-    # Dostępne opcje: LEFT, CENTER, RIGHT
+    # Text alignment
+    # Available options: LEFT, CENTER, RIGHT
     textAlignment: CENTER
-    # Czy hologram ma używać domyślnego tła
+    # Whether the hologram should use the default background
     defaultBackground: true
-    # ...jeśli nie to ustawiamy wartości 0-255
+    # ...if not, set the values 0-255
     backgroundARGB:
       alpha: 60
       red: 0
       green: 0
       blue: 0
 
-  # API Bukkit
+  # Bukkit API
   standalone:
-    # Cienie za tekstem (TextDisplay#setShadowed)
+    # Text shadow (TextDisplay#setShadowed)
     textShadow: true
-    # Wyrównanie tekstu
-    # Dostępne opcje: LEFT, CENTER, RIGHT
+    # Text alignment
+    # Available options: LEFT, CENTER, RIGHT
     textAlignment: CENTER
-    # Czy hologram ma używać domyślnego tła
+    # Whether the hologram should use the default background
     defaultBackground: false
-    # ...jeśli nie, to ustawiamy wartości 0–255
+    # ...if not, set the values 0-255
     backgroundARGB:
       alpha: 60
       red: 0
@@ -95,25 +99,47 @@ integration:
 
 ---
 
-## 📦 Wymagania
+## 🎮 Commands & permissions
+
+| Command | Permission | Description |
+|---|---|---|
+| `/shelfnames` (or `/shelfnames info`) | *(none)* | Plugin info: name, version, GitHub link |
+| `/shelfnames clear` | `shelfnames.admin` | Removes every hologram created by the plugin |
+| `/shelfnames reload` | `shelfnames.admin` | Full restart: destroys holograms, reloads `config.yml`, restarts components |
+
+Players without `shelfnames.admin` can only run the bare `/shelfnames` (info) command.
+`shelfnames.admin` defaults to OP.
+
+---
+
+## 📦 Requirements
 
 - Paper 1.21+
 - FancyHolograms 2.8.0+
 - Java 21
 
-##🧩 Zależności
+## 🧩 Dependencies
 
 - [FancyHolograms](https://modrinth.com/plugin/fancyholograms)
 - Paper API
-- Adventure (wbudowane w Paper)
+- Adventure (bundled with Paper)
 
-## 🚀 Planowane funkcje
+## 🚀 Planned features
 
-- Dodanie wsparcia dla [DecentHolograms](https://www.spigotmc.org/resources/decentholograms-1-8-1-21-11-papi-support-no-dependencies.96927/)
-- Opcjonalne wygładzanie przejść (fade in / fade out)
+- Optional transition smoothing (fade in / fade out)
 
-## 🧠 Uwagi techniczne
+## 🚫 Unsupported integrations
 
-Plugin nie używa NMS, nie wysyła własnych pakietów i nie ingeruje w tick loop serwera.
+### DecentHolograms
 
-Został zoptymalizowany przy użyciu Spark Profiler i testowany pod kątem realnego obciążenia.
+[DecentHolograms](https://www.spigotmc.org/resources/decentholograms-1-8-1-21-11-papi-support-no-dependencies.96927/)
+**is not supported** — its public API exposes no hologram pinning (billboard `FIXED`),
+scaling, or background, so the integration cannot be done the way it is for
+FancyHolograms or the Bukkit API. Dependency-free replacement: the `STANDALONE` provider
+(Bukkit `TextDisplay`), which honors `hologram.scale` and `hologram.position-fixed`.
+
+## 🧠 Technical notes
+
+The plugin does not use NMS, does not send its own packets, and does not interfere with the server tick loop.
+
+It was optimized using the Spark Profiler and tested under realistic load.

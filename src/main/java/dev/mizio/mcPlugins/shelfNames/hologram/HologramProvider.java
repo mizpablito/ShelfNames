@@ -4,8 +4,11 @@ public enum HologramProvider {
 
     AUTO(null),                 // tryb wyboru
     FANCY("FancyHolograms"),
-//    DECENT("DecentHolograms"),
     STANDALONE(null);           // zawsze dostępny
+
+    // DecentHolograms nie jest wspierany: jego publiczne API nie udostępnia
+    // przypięcia (billboard FIXED), skali ani tła, więc integracji nie da się
+    // zrealizować tak jak dla FancyHolograms czy API Bukkit. Zamiennik: STANDALONE.
 
     private final String pluginName;
 
