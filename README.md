@@ -6,6 +6,8 @@ A lightweight Minecraft (Paper) plugin that displays the **names of items placed
 
 The plugin is designed with a focus on **performance**, **no unnecessary allocations**, and **minimal impact on the server thread**.
 
+![Show only custom item names](docs/images/hologramForShelf.png)
+
 ---
 
 ## ✨ Features
@@ -34,7 +36,6 @@ The plugin is designed with a focus on **performance**, **no unnecessary allocat
 ## 🔧 Configuration
 
 A Polish copy of the config comments is available at [`docs/config.pl.yml`](docs/config.pl.yml).
-The plugin always uses `config.yml` (English comments).
 
 ```yaml
 # How often (in ticks) to check whether a player is looking at a shelf

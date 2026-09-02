@@ -6,6 +6,8 @@ Lekki plugin do Minecraft (Paper), który wyświetla **nazwy itemów znajdujący
 
 Plugin został zaprojektowany z naciskiem na **wydajność**, **brak zbędnych alokacji** oraz **minimalny wpływ na server thread**.
 
+![Show only custom item names](docs/images/hologramForShelf.png)
+
 ---
 
 ## ✨ Funkcje
@@ -34,7 +36,6 @@ Plugin został zaprojektowany z naciskiem na **wydajność**, **brak zbędnych a
 ## 🔧 Konfiguracja
 
 Wersja PL komentarzy w pliku konfiguracyjnym: [`docs/config.pl.yml`](docs/config.pl.yml).
-Plugin zawsze korzysta z `config.yml` (komentarze po angielsku).
 
 ```yaml
 # Co ile ticków sprawdzać czy gracz patrzy się na półkę
