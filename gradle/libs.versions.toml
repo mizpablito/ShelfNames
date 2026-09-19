@@ -3,7 +3,7 @@
 
 [versions]
 de-oliver-fancyholograms = "2.9.0"
-io-papermc-paper-paper-api = "1.21.11-R0.1-SNAPSHOT"
+io-papermc-paper-paper-api = "26.3.build.+"
 org-projectlombok-lombok = "1.18.42"
 
 [libraries]

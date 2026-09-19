@@ -25,14 +25,14 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.2.build.+")
+    compileOnly(libs.io.papermc.paper.paper.api)
     compileOnly(libs.org.projectlombok.lombok)
     compileOnly(libs.de.oliver.fancyholograms)
     implementation("org.bstats:bstats-bukkit:3.2.1")
 }
 
 group = "dev.mizio.mcPlugins"
-version = "1.2.3"
+version = "1.2.4"
 description = "Wyświetlanie nazw itemów na półkach."
 java.sourceCompatibility = JavaVersion.VERSION_25
 

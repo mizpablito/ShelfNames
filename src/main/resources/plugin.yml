@@ -1,7 +1,7 @@
 name: ${name}
 version: ${version}
 main: dev.mizio.mcPlugins.shelfNames.MainShelfNames
-api-version: '1.21'
+api-version: '26.1'
 authors: [ 'MizPablito' ]
 description: ${description}
 website: https://github.com/mizpablito/ShelfNames
