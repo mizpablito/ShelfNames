@@ -33,6 +33,7 @@ public class PluginConfig {
 
 
     public void load(Plugin plugin) {
+        plugin.reloadConfig();
         FileConfiguration config  = plugin.getConfig();
         this.updateIntervalTicks = config.getLong("update-interval-ticks", 10L);
         this.rayTraceBlocksMaxDistance = config.getInt("rayTraceBlocks-max-distance", 5);
