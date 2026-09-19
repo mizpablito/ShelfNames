@@ -19,6 +19,7 @@ The plugin is designed with a focus on **performance**, **no unnecessary allocat
 - Automatically removes the hologram once the player looks away
 - No flickering and no redundant updates
 - Fully compatible with Adventure / MiniMessage
+- Runs on Paper, Purpur and Folia
 
 ---
 

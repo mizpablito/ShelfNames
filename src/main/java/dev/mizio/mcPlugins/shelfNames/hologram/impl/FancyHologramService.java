@@ -8,6 +8,7 @@ import de.oliver.fancyholograms.api.hologram.Hologram;
 import dev.mizio.mcPlugins.shelfNames.MainShelfNames;
 import dev.mizio.mcPlugins.shelfNames.hologram.HologramHandle;
 import dev.mizio.mcPlugins.shelfNames.hologram.HologramService;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Display.Billboard;
@@ -15,16 +16,18 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
 import org.joml.Vector3f;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FancyHologramService implements HologramService {
 
     private final MainShelfNames plugin;
     private final HologramManager manager;
-    private final Map<UUID, FancyHandle> holograms = new HashMap<>();
+    // ConcurrentHashMap: getOrCreate/remove mogą być teraz wołane równolegle
+    // z EntityScheduler-owych zadań różnych graczy na różnych regionach.
+    private final Map<UUID, FancyHandle> holograms = new ConcurrentHashMap<>();
     private final boolean fixed;
 
     public FancyHologramService(MainShelfNames plugin) {
@@ -61,11 +64,13 @@ public class FancyHologramService implements HologramService {
 
     private static class FancyHandle implements HologramHandle {
 
+        private final MainShelfNames plugin;
         private final HologramManager manager;
         private final Hologram hologram;
         private final TextHologramData data;
 
         FancyHandle(Player player, HologramManager manager, MainShelfNames plugin, boolean fixed) {
+            this.plugin = plugin;
             this.manager = manager;
 
             Location loc = player.getLocation();
@@ -104,7 +109,12 @@ public class FancyHologramService implements HologramService {
 
         @Override
         public void remove() {
-            manager.removeHologram(hologram);
+            // Może być wywołane z dowolnego wątku (komenda /shelfnames clear,
+            // PlayerQuitEvent, reload) - RegionScheduler gwarantuje wykonanie
+            // na wątku regionu właściciela lokalizacji hologramu (na Paper/Purpur
+            // to po prostu natychmiastowe wykonanie).
+            Location location = hologram.getData().getLocation();
+            Bukkit.getRegionScheduler().execute(plugin, location, () -> manager.removeHologram(hologram));
         }
     }
 }
