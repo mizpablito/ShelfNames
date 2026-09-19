@@ -5,7 +5,7 @@ import dev.mizio.mcPlugins.shelfNames.hologram.HologramHandle;
 import dev.mizio.mcPlugins.shelfNames.hologram.HologramService;
 import dev.mizio.mcPlugins.shelfNames.shelf.ShelfCache;
 import dev.mizio.mcPlugins.shelfNames.shelf.ShelfSnapshot;
-import org.bukkit.Bukkit;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Location;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
@@ -17,24 +17,29 @@ import org.bukkit.util.RayTraceResult;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
-public class ShelfLookTask implements Runnable {
+/**
+ * Zadanie planowane osobno dla każdego gracza na jego {@code EntityScheduler}
+ * (Folia-bezpieczne: zawsze wykonuje się na wątku regionu, w którym gracz
+ * aktualnie się znajduje - na Paper/Purpur po prostu na głównym wątku).
+ */
+public class ShelfLookTask implements Consumer<ScheduledTask> {
 
-    // Rekord pomocniczy do identyfikacji: dany gracz + konkretna półka
-    private record ViewHoloKey(UUID playerId, Location location) {}
-    // Cooldown 5 sekund per (gracz + półka)
+    // Cooldown 5 sekund per (ta półka) - instancja tego zadania jest już
+    // przypisana do jednego, konkretnego gracza.
     private final long holoViewCooldownMs = 5_000L;
+    private final Map<Location, Long> lastHoloViewTimes = new ConcurrentHashMap<>();
 
     private final MainShelfNames plugin;
+    private final Player player;
     private final HologramService holograms;
     private final ShelfCache cache;
 
-    private final Map<ViewHoloKey, Long> lastHoloViewTimes = new ConcurrentHashMap<>();
-
-    public ShelfLookTask(MainShelfNames plugin, HologramService holograms, ShelfCache cache) {
+    public ShelfLookTask(MainShelfNames plugin, Player player, HologramService holograms, ShelfCache cache) {
         this.plugin = plugin;
+        this.player = player;
         this.holograms = holograms;
         this.cache = cache;
     }
@@ -42,102 +47,85 @@ public class ShelfLookTask implements Runnable {
     /**
      * {@code true} gdy ten task jest już nieaktualny - plugin się wyłącza
      * albo po {@code reload} działa nowy {@link HologramService}. Zapobiega
-     * tworzeniu osieroconych hologramów przez zaległe zadania asynchroniczne.
+     * tworzeniu osieroconych hologramów przez zaległe wywołania.
      */
     private boolean isStale() {
         return !plugin.isEnabled() || plugin.getHologramService() != holograms;
     }
 
-    private void tryCountView(UUID playerId, Location shelfLoc) {
+    private void tryCountView(Location shelfLoc) {
         long now = System.currentTimeMillis();
-        ViewHoloKey key = new ViewHoloKey(playerId, shelfLoc);
-        long last = lastHoloViewTimes.getOrDefault(key, 0L);
+        long last = lastHoloViewTimes.getOrDefault(shelfLoc, 0L);
 
         if (now - last >= holoViewCooldownMs) {
-            lastHoloViewTimes.put(key, now);
+            lastHoloViewTimes.put(shelfLoc, now);
             plugin.incrementViewHoloCount();
         }
     }
 
     @Override
-    public void run() {
+    public void accept(ScheduledTask task) {
+        if (isStale()) return;
+        if (player.isDead()) return;
+
         int maxDistance = plugin.getPluginConfig().getRayTraceBlocksMaxDistance();
         double offsetY = plugin.getPluginConfig().getHologramOffsetY();
         double forwardOffset = plugin.getPluginConfig().getHologramForwardOffset();
 
-        for (Player player : Bukkit.getOnlinePlayers()) {
-
-            if (!player.isOnline()) {
-                holograms.remove(player);
-                cache.clear(player);
-                lastHoloViewTimes.keySet().removeIf(key -> key.playerId().equals(player.getUniqueId()));
-                continue;
-            }
-
-            if (player.isDead()) continue;
-
-            RayTraceResult result = player.rayTraceBlocks(maxDistance);
-            if (result == null || result.getHitBlock() == null) {
-                holograms.remove(player);
-                cache.clear(player);
-                continue;
-            }
-
-            Block block = result.getHitBlock();
-            if (!Tag.WOODEN_SHELVES.isTagged(block.getType())) {
-                holograms.remove(player);
-                cache.clear(player);
-                continue;
-            }
-
-            if (cache.isSameBlock(player, block)) continue;
-
-            Shelf shelf = (Shelf) block.getState();
-            Location shelfLoc = block.getLocation();
-
-            ShelfSnapshot snapshot = ShelfSnapshot.fromShelf(
-                    shelf,
-                    plugin.getPluginConfig().isOnlyCustomNames()
-            );
-
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                if (isStale()) return;
-                if (!cache.hasChanged(player, shelfLoc, snapshot)) return;
-                cache.update(player, shelfLoc, snapshot);
-
-                Bukkit.getScheduler().runTask(plugin, () -> {
-                    if (isStale()) return;
-
-                    HologramHandle holo = holograms.getOrCreate(player);
-
-                    BlockFace facing = BlockFace.SOUTH;
-                    if (block.getBlockData() instanceof Directional d) {
-                        facing = d.getFacing();
-                    }
-
-                    float yaw = switch (facing) {
-                        case SOUTH -> 0f;
-                        case WEST  -> 90f;
-                        case NORTH -> 180f;
-                        case EAST  -> -90f;
-                        default -> 0f;
-                    };
-
-                    Location holoLoc = shelfLoc.clone()
-                            .add(0.5, offsetY, 0.5)
-                            .add(facing.getDirection().multiply(forwardOffset));
-
-                    holoLoc.setYaw(yaw);
-
-                    holo.update(
-                            player,
-                            holoLoc,
-                            List.of(snapshot.s0(), snapshot.s1(), snapshot.s2())
-                    );
-
-                    tryCountView(player.getUniqueId(), shelfLoc);
-                });
-            });
+        RayTraceResult result = player.rayTraceBlocks(maxDistance);
+        if (result == null || result.getHitBlock() == null) {
+            holograms.remove(player);
+            cache.clear(player);
+            return;
         }
+
+        Block block = result.getHitBlock();
+        if (!Tag.WOODEN_SHELVES.isTagged(block.getType())) {
+            holograms.remove(player);
+            cache.clear(player);
+            return;
+        }
+
+        if (cache.isSameBlock(player, block)) return;
+
+        Shelf shelf = (Shelf) block.getState();
+        Location shelfLoc = block.getLocation();
+
+        ShelfSnapshot snapshot = ShelfSnapshot.fromShelf(
+                shelf,
+                plugin.getPluginConfig().isOnlyCustomNames()
+        );
+
+        if (!cache.hasChanged(player, shelfLoc, snapshot)) return;
+        cache.update(player, shelfLoc, snapshot);
+
+        HologramHandle holo = holograms.getOrCreate(player);
+
+        BlockFace facing = BlockFace.SOUTH;
+        if (block.getBlockData() instanceof Directional d) {
+            facing = d.getFacing();
+        }
+
+        float yaw = switch (facing) {
+            case SOUTH -> 0f;
+            case WEST  -> 90f;
+            case NORTH -> 180f;
+            case EAST  -> -90f;
+            default -> 0f;
+        };
+
+        Location holoLoc = shelfLoc.clone()
+                .add(0.5, offsetY, 0.5)
+                .add(facing.getDirection().multiply(forwardOffset));
+
+        holoLoc.setYaw(yaw);
+
+        holo.update(
+                player,
+                holoLoc,
+                List.of(snapshot.s0(), snapshot.s1(), snapshot.s2())
+        );
+
+        tryCountView(shelfLoc);
     }
 }

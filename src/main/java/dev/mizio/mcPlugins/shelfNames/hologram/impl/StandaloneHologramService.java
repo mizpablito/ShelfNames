@@ -15,15 +15,17 @@ import org.bukkit.entity.TextDisplay;
 import org.bukkit.util.Transformation;
 import org.joml.Vector3f;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class StandaloneHologramService implements HologramService {
 
     private final MainShelfNames plugin;
-    private final Map<UUID, StandaloneHandle> holograms = new HashMap<>();
+    // ConcurrentHashMap: getOrCreate/remove mogą być teraz wołane równolegle
+    // z EntityScheduler-owych zadań różnych graczy na różnych regionach.
+    private final Map<UUID, StandaloneHandle> holograms = new ConcurrentHashMap<>();
 
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
     private static final LegacyComponentSerializer LEGACY_SECTION =
@@ -152,7 +154,11 @@ public class StandaloneHologramService implements HologramService {
 
         @Override
         public void remove() {
-            display.remove();
+            // Może być wywołane z dowolnego wątku (komenda /shelfnames clear,
+            // PlayerQuitEvent, reload) - display.getScheduler() gwarantuje
+            // wykonanie na wątku regionu aktualnie właściwego dla tej encji
+            // (na Paper/Purpur to po prostu natychmiastowe wykonanie).
+            display.getScheduler().execute(plugin, display::remove, null, 1L);
         }
     }
 }
