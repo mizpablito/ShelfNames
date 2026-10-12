@@ -2,7 +2,7 @@
 # https://docs.gradle.org/current/userguide/version_catalogs.html#sec::toml-dependencies-format
 
 [versions]
-de-oliver-fancyholograms = "2.9.0"
+de-oliver-fancyholograms = "2.10.0"
 # FancyHolograms 3.x (alfa) - publikowane tylko na Modrinth, v3 nie ma jeszcze artefaktu w repo.fancyinnovations.com
 maven-modrinth-fancyholograms = "3.0.0-SNAPSHOT.90"
 io-papermc-paper-paper-api = "26.3.build.+"
