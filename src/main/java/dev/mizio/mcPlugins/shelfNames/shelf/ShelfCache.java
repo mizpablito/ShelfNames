@@ -4,15 +4,18 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ShelfCache {
 
-    private final Map<UUID, ShelfSnapshot> snapshots = new HashMap<>();
-    private final Map<UUID, Location> locations = new HashMap<>();
-    private final Map<UUID, BlockKey> lastBlock = new HashMap<>();
+    // ConcurrentHashMap: na Folii różni gracze są obsługiwani przez
+    // faktycznie równoległe wątki regionów, zwykły HashMap nie jest bezpieczny
+    // nawet przy rozłącznych kluczach (per-gracz).
+    private final Map<UUID, ShelfSnapshot> snapshots = new ConcurrentHashMap<>();
+    private final Map<UUID, Location> locations = new ConcurrentHashMap<>();
+    private final Map<UUID, BlockKey> lastBlock = new ConcurrentHashMap<>();
 
 
     public boolean hasChanged(Player player, Location loc, ShelfSnapshot snap) {

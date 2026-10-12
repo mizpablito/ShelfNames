@@ -5,6 +5,7 @@ api-version: '26.1'
 authors: [ 'MizPablito' ]
 description: ${description}
 website: https://github.com/mizpablito/ShelfNames
+folia-supported: true
 
 softdepend:
  - FancyHolograms

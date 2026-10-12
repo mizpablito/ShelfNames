@@ -19,6 +19,7 @@ Plugin został zaprojektowany z naciskiem na **wydajność**, **brak zbędnych a
 - Automatyczne usuwanie hologramu po odejściu wzroku
 - Brak migotania i zbędnych aktualizacji
 - W pełni kompatybilny z Adventure / MiniMessage
+- Działa na Paper, Purpur i Folia
 
 ---
 

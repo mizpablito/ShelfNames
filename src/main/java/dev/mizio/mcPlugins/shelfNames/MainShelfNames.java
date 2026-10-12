@@ -5,17 +5,22 @@ import dev.mizio.mcPlugins.shelfNames.hologram.HologramProvider;
 import dev.mizio.mcPlugins.shelfNames.hologram.HologramService;
 import dev.mizio.mcPlugins.shelfNames.hologram.impl.FancyHologramService;
 import dev.mizio.mcPlugins.shelfNames.hologram.impl.StandaloneHologramService;
+import dev.mizio.mcPlugins.shelfNames.listener.PlayerSessionListener;
 import dev.mizio.mcPlugins.shelfNames.shelf.ShelfCache;
 import dev.mizio.mcPlugins.shelfNames.task.ShelfLookTask;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import lombok.Getter;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bstats.charts.SingleLineChart;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -27,7 +32,10 @@ public final class MainShelfNames extends JavaPlugin {
     @Getter
     private PluginConfig pluginConfig;
 
-    private BukkitTask shelfLookTask;
+    // Jedno powtarzalne zadanie ShelfLookTask per gracz, zaplanowane na jego
+    // EntityScheduler - Folia-bezpieczny odpowiednik dawnej jednej, globalnej
+    // pętli po Bukkit.getOnlinePlayers().
+    private final Map<UUID, ScheduledTask> lookTasks = new ConcurrentHashMap<>();
 
     private final AtomicInteger viewHologramCounter = new AtomicInteger(0);
 
@@ -37,6 +45,7 @@ public final class MainShelfNames extends JavaPlugin {
         pluginConfig = new PluginConfig();
 
         setupMetrics();
+        Bukkit.getPluginManager().registerEvents(new PlayerSessionListener(this), this);
         startRuntime();
 
         PluginCommand command = getCommand("shelfnames");
@@ -58,7 +67,8 @@ public final class MainShelfNames extends JavaPlugin {
 
     /**
      * (Re)loads the configuration from disk and (re)creates all live components:
-     * the shelf cache, the hologram service and the look task.
+     * the shelf cache, the hologram service and per-player look tasks for
+     * everyone already online.
      */
     public synchronized void startRuntime() {
         reloadConfig();
@@ -67,24 +77,19 @@ public final class MainShelfNames extends JavaPlugin {
         this.shelfCache = new ShelfCache();
         this.hologramService = createHologramService();
 
-        long interval = Math.max(1L, pluginConfig.getUpdateIntervalTicks());
-        this.shelfLookTask = Bukkit.getScheduler().runTaskTimer(
-                this,
-                new ShelfLookTask(this, hologramService, shelfCache),
-                0L,
-                interval
-        );
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            startTrackingPlayer(player);
+        }
     }
 
     /**
-     * Cancels the look task and destroys every hologram created by the plugin.
-     * bStats keeps running - it is set up once in {@link #onEnable()}.
+     * Cancels every per-player look task and destroys every hologram created
+     * by the plugin. bStats keeps running - it is set up once in {@link #onEnable()}.
      */
     public synchronized void stopRuntime() {
-        if (shelfLookTask != null) {
-            shelfLookTask.cancel();
-            shelfLookTask = null;
-        }
+        lookTasks.values().forEach(ScheduledTask::cancel);
+        lookTasks.clear();
+
         if (hologramService != null) {
             hologramService.removeAll();
             hologramService = null;
@@ -99,6 +104,50 @@ public final class MainShelfNames extends JavaPlugin {
     public synchronized void reloadRuntime() {
         stopRuntime();
         startRuntime();
+    }
+
+    // ------------------------------------------------------------
+    //  Per-player tracking (Folia: EntityScheduler)
+    // ------------------------------------------------------------
+
+    /**
+     * Starts (or restarts) the shelf-look task for a single player on their
+     * own {@code EntityScheduler}. Called on plugin/reload start-up for every
+     * already-connected player, and from {@link PlayerSessionListener} on join.
+     */
+    public void startTrackingPlayer(Player player) {
+        long interval = Math.max(1L, pluginConfig.getUpdateIntervalTicks());
+
+        ScheduledTask task = player.getScheduler().runAtFixedRate(
+                this,
+                new ShelfLookTask(this, player, hologramService, shelfCache),
+                () -> stopTrackingPlayer(player),
+                1L,
+                interval
+        );
+
+        if (task != null) {
+            lookTasks.put(player.getUniqueId(), task);
+        }
+    }
+
+    /**
+     * Cancels the player's look task and cleans up everything the plugin
+     * tracks for them (hologram + cache). Called on quit, on the
+     * {@code EntityScheduler} retired callback, and during {@link #stopRuntime()}
+     * cleanup for individual entries.
+     */
+    public void stopTrackingPlayer(Player player) {
+        ScheduledTask task = lookTasks.remove(player.getUniqueId());
+        if (task != null) {
+            task.cancel();
+        }
+        if (hologramService != null) {
+            hologramService.remove(player);
+        }
+        if (shelfCache != null) {
+            shelfCache.clear(player);
+        }
     }
 
     // ------------------------------------------------------------
