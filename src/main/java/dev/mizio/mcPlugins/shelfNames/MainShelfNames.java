@@ -3,6 +3,7 @@ package dev.mizio.mcPlugins.shelfNames;
 import dev.mizio.mcPlugins.shelfNames.comand.ShelfNamesCommand;
 import dev.mizio.mcPlugins.shelfNames.hologram.HologramProvider;
 import dev.mizio.mcPlugins.shelfNames.hologram.HologramService;
+import dev.mizio.mcPlugins.shelfNames.hologram.impl.Fancy3HologramService;
 import dev.mizio.mcPlugins.shelfNames.hologram.impl.FancyHologramService;
 import dev.mizio.mcPlugins.shelfNames.hologram.impl.StandaloneHologramService;
 import dev.mizio.mcPlugins.shelfNames.listener.PlayerSessionListener;
@@ -215,10 +216,30 @@ public final class MainShelfNames extends JavaPlugin {
 
     private HologramService createService(HologramProvider provider) {
         return switch (provider) {
-            case FANCY -> new FancyHologramService(this);
+            case FANCY -> createFancyService();
             case STANDALONE -> new StandaloneHologramService(this);
             default -> throw new IllegalStateException("AUTO should not create service");
         };
+    }
+
+    // osobna metoda z if/return - klasa niewybranej wersji API nie jest w ogóle ładowana
+    private HologramService createFancyService() {
+        if (isFancyHologramsV3()) {
+            return new Fancy3HologramService(this);
+        }
+        return new FancyHologramService(this);
+    }
+
+    // FancyHolograms 3.x przeniosło API do innego pakietu (de.oliver -> com.fancyinnovations),
+    // więc wersję rozpoznajemy po obecności klasy wejściowej nowego API.
+    private boolean isFancyHologramsV3() {
+        try {
+            Class.forName("com.fancyinnovations.fancyholograms.api.FancyHolograms");
+            getLogger().info("Detected FancyHolograms 3.x API (experimental)");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
 
