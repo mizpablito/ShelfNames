@@ -19,6 +19,14 @@ repositories {
         url = uri("https://repo.fancyinnovations.com/releases")
     }
 
+    // Modrinth Maven - tylko dla FancyHolograms 3.x (alfa)
+    maven {
+        url = uri("https://api.modrinth.com/maven")
+        content {
+            includeGroup("maven.modrinth")
+        }
+    }
+
     maven {
         url = uri("https://repo.maven.apache.org/maven2/")
     }
@@ -28,6 +36,7 @@ dependencies {
     compileOnly(libs.io.papermc.paper.paper.api)
     compileOnly(libs.org.projectlombok.lombok)
     compileOnly(libs.de.oliver.fancyholograms)
+    compileOnly(libs.maven.modrinth.fancyholograms)
     implementation("org.bstats:bstats-bukkit:3.2.1")
 }
 
