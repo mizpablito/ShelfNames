@@ -9,6 +9,7 @@ import org.bukkit.plugin.Plugin;
 @Data
 public class PluginConfig {
 
+    private boolean metricsEnabled;
     private long updateIntervalTicks;
     private int rayTraceBlocksMaxDistance;
     private boolean onlyCustomNames;
@@ -35,6 +36,7 @@ public class PluginConfig {
     public void load(Plugin plugin) {
         plugin.reloadConfig();
         FileConfiguration config  = plugin.getConfig();
+        this.metricsEnabled = config.getBoolean("bStats", true);
         this.updateIntervalTicks = config.getLong("update-interval-ticks", 10L);
         this.rayTraceBlocksMaxDistance = config.getInt("rayTraceBlocks-max-distance", 5);
         if (this.rayTraceBlocksMaxDistance <= 0 || this.rayTraceBlocksMaxDistance > 15) {

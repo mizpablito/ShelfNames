@@ -39,6 +39,11 @@ Plugin został zaprojektowany z naciskiem na **wydajność**, **brak zbędnych a
 Wersja PL komentarzy w pliku konfiguracyjnym: [`docs/config.pl.yml`](docs/config.pl.yml).
 
 ```yaml
+# Anonimowe statystyki użycia wysyłane do bStats (https://bstats.org).
+# Ustaw false, aby wyłączyć je dla tego pluginu. Globalny przełącznik
+# w plugins/bStats/config.yml również obowiązuje.
+bStats: true
+
 # Co ile ticków sprawdzać czy gracz patrzy się na półkę
 update-interval-ticks: 5
 # Maksymalny dystans w jakim musi być półka od gracza

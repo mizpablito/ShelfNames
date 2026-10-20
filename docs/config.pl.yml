@@ -4,6 +4,12 @@
 # Plugin NIE korzysta z tego pliku - zawsze wczytuje `config.yml` (komentarze po angielsku).
 # Klucze i wartości domyślne są identyczne jak w `src/main/resources/config.yml`.
 
+# Anonimowe statystyki użycia wysyłane do bStats (https://bstats.org).
+# Statystyki pluginu: https://bstats.org/plugin/bukkit/ShelfNames/33398
+# Ustaw false, aby wyłączyć je dla tego pluginu. Globalny przełącznik
+# w plugins/bStats/config.yml również obowiązuje.
+bStats: true
+
 # Co ile ticków sprawdzać czy gracz patrzy się na półkę
 update-interval-ticks: 5
 # Maksymalny dystans w jakim musi być półka od gracza (zalecane, nie więcej niż 10)

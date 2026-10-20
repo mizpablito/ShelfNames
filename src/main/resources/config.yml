@@ -2,6 +2,12 @@
 # A Polish translation of these comments is available on GitHub: docs/config.pl.yml
 # (reference only - the plugin always reads this file).
 
+# Anonymous usage statistics sent to bStats (https://bstats.org).
+# Plugin stats: https://bstats.org/plugin/bukkit/ShelfNames/33398
+# Set to false to disable them for this plugin. The server-wide switch
+# in plugins/bStats/config.yml also applies.
+bStats: true
+
 # How often (in ticks) to check whether a player is looking at a shelf
 update-interval-ticks: 5
 # Maximum distance the shelf can be from the player (recommended: no more than 10)

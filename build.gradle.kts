@@ -32,7 +32,7 @@ dependencies {
 }
 
 group = "dev.mizio.mcPlugins"
-version = "1.3.1"
+version = "1.3.2"
 description = "Wyświetlanie nazw itemów na półkach."
 java.sourceCompatibility = JavaVersion.VERSION_25
 

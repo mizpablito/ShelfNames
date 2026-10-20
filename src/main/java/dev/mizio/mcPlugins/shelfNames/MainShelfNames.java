@@ -37,14 +37,16 @@ public final class MainShelfNames extends JavaPlugin {
     // pętli po Bukkit.getOnlinePlayers().
     private final Map<UUID, ScheduledTask> lookTasks = new ConcurrentHashMap<>();
 
+    private Metrics metrics;
+
     private final AtomicInteger viewHologramCounter = new AtomicInteger(0);
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        ConfigUpdater.addMissingKeys(this);
         pluginConfig = new PluginConfig();
 
-        setupMetrics();
         Bukkit.getPluginManager().registerEvents(new PlayerSessionListener(this), this);
         startRuntime();
 
@@ -59,6 +61,7 @@ public final class MainShelfNames extends JavaPlugin {
     @Override
     public void onDisable() {
         stopRuntime();
+        stopMetrics();
     }
 
     // ------------------------------------------------------------
@@ -73,6 +76,7 @@ public final class MainShelfNames extends JavaPlugin {
     public synchronized void startRuntime() {
         reloadConfig();
         pluginConfig.load(this);
+        updateMetrics();
 
         this.shelfCache = new ShelfCache();
         this.hologramService = createHologramService();
@@ -84,7 +88,8 @@ public final class MainShelfNames extends JavaPlugin {
 
     /**
      * Cancels every per-player look task and destroys every hologram created
-     * by the plugin. bStats keeps running - it is set up once in {@link #onEnable()}.
+     * by the plugin. bStats is not touched here - it follows the {@code bStats}
+     * config option in {@link #updateMetrics()} and is shut down in {@link #onDisable()}.
      */
     public synchronized void stopRuntime() {
         lookTasks.values().forEach(ScheduledTask::cancel);
@@ -152,14 +157,32 @@ public final class MainShelfNames extends JavaPlugin {
 
     // ------------------------------------------------------------
 
-    private void setupMetrics() {
-        int pluginId = 33398;
-        Metrics metrics = new Metrics(this, pluginId);
-        metrics.addCustomChart(new SingleLineChart("hologram_views", this::getAndResetHoloViews));
-        metrics.addCustomChart(new SimplePie("only_custom_names", () ->
-                getPluginConfig().isOnlyCustomNames() ? "Enabled" : "Disabled"));
-        metrics.addCustomChart(new SimplePie("raytrace_distance", () ->
-                getPluginConfig().getRayTraceBlocksMaxDistance() + " blocks"));
+    /**
+     * Starts or stops bStats to match the {@code bStats} option, so the setting is
+     * honoured on enable and after {@code /shelfnames reload}. Note that bStats also has
+     * its own server-wide opt-out ({@code plugins/bStats/config.yml}), which always applies.
+     */
+    private void updateMetrics() {
+        boolean enabled = pluginConfig.isMetricsEnabled();
+
+        if (enabled && metrics == null) {
+            Metrics created = new Metrics(this, 33398);
+            created.addCustomChart(new SingleLineChart("hologram_views", this::getAndResetHoloViews));
+            created.addCustomChart(new SimplePie("only_custom_names", () ->
+                    getPluginConfig().isOnlyCustomNames() ? "Enabled" : "Disabled"));
+            created.addCustomChart(new SimplePie("raytrace_distance", () ->
+                    getPluginConfig().getRayTraceBlocksMaxDistance() + " blocks"));
+            metrics = created;
+        } else if (!enabled) {
+            stopMetrics();
+        }
+    }
+
+    private void stopMetrics() {
+        if (metrics != null) {
+            metrics.shutdown();
+            metrics = null;
+        }
     }
 
     private HologramService createHologramService() {

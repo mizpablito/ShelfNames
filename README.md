@@ -39,6 +39,11 @@ The plugin is designed with a focus on **performance**, **no unnecessary allocat
 A Polish copy of the config comments is available at [`docs/config.pl.yml`](docs/config.pl.yml).
 
 ```yaml
+# Anonymous usage statistics sent to bStats (https://bstats.org).
+# Set to false to disable them for this plugin. The server-wide switch
+# in plugins/bStats/config.yml also applies.
+bStats: true
+
 # How often (in ticks) to check whether a player is looking at a shelf
 update-interval-ticks: 5
 # Maximum distance the shelf can be from the player (recommended: no more than 10)
